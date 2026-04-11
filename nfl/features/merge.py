@@ -1,0 +1,102 @@
+"""
+Faithful replication of notebook Cell 42 merge chain.
+Joins all raw DataFrames into a single NFLdataset.
+"""
+import logging
+
+import pandas as pd
+
+log = logging.getLogger(__name__)
+
+
+def build_nfl_dataset(
+    teamstats: pd.DataFrame,
+    stadiums: pd.DataFrame,
+    betting_odds: pd.DataFrame,
+    referee_assignments: pd.DataFrame,
+    elo_ratings: pd.DataFrame,
+    google_trends: pd.DataFrame,
+) -> pd.DataFrame:
+    """
+    Replicates Cell 42 merge chain:
+      1. teamstats + stadiums → teamstatswstadium
+      2. betting_odds + referees → df
+      3. df + elo → df
+      4. df + teamstatswstadium → df  (home team stats)
+      5. df + google_trends (home) → df
+      6. df + google_trends (away) → NFLdataset
+    """
+    if betting_odds.empty:
+        log.warning("betting_odds is empty — cannot build dataset")
+        return pd.DataFrame()
+
+    # Step 1: Attach stadium metadata to team stats
+    if not stadiums.empty and not teamstats.empty:
+        teamstatswstadium = pd.merge(
+            teamstats,
+            stadiums[["StadiumID", "Stadium", "PlayingSurface", "Type"]],
+            on="Stadium",
+            how="left",
+        )
+    else:
+        teamstatswstadium = teamstats.copy()
+
+    # Step 2: Attach referee data to betting odds
+    df = betting_odds.copy()
+    if not referee_assignments.empty:
+        df = pd.merge(
+            df,
+            referee_assignments[["HomeTeamName", "month", "year", "dayofyear", "Referee"]],
+            on=["HomeTeamName", "month", "year", "dayofyear"],
+            how="left",
+        )
+
+    # Step 3: Attach ELO ratings
+    if not elo_ratings.empty:
+        df = pd.merge(
+            df,
+            elo_ratings[["HomeTeamName", "month", "year", "dayofyear",
+                          "elo1_pre", "elo2_pre", "qbelo1_pre", "qbelo2_pre", "neutral"]],
+            on=["HomeTeamName", "month", "year", "dayofyear"],
+            how="left",
+        )
+
+    # Step 4: Attach home team game stats + stadium
+    if not teamstatswstadium.empty:
+        df = pd.merge(
+            df,
+            teamstatswstadium,
+            left_on=["HomeTeamName", "year", "dayofyear"],
+            right_on=["Team", "year", "dayofyear"],
+            how="left",
+        )
+
+    # Steps 5 & 6: Attach Google Trends (home + away)
+    trends_available = not google_trends.empty
+    if trends_available:
+        df = pd.merge(
+            df,
+            google_trends[["Team", "year", "weekofyear", "HomeTeamGoogleTrend"]],
+            left_on=["HomeTeamId", "year", "weekofyear"],
+            right_on=["Team", "year", "weekofyear"],
+            how="left",
+        )
+        NFLdataset = pd.merge(
+            df,
+            google_trends[["Team", "year", "weekofyear", "AwayTeamGoogleTrend"]],
+            left_on=["AwayTeamId", "year", "weekofyear"],
+            right_on=["Team", "year", "weekofyear"],
+            how="left",
+        )
+    else:
+        NFLdataset = df.copy()
+
+    # Fill missing trend columns with 0
+    for col in ["HomeTeamGoogleTrend", "AwayTeamGoogleTrend"]:
+        if col not in NFLdataset.columns:
+            NFLdataset[col] = 0
+        else:
+            NFLdataset[col].fillna(0, inplace=True)
+
+    log.info(f"Built NFLdataset: {len(NFLdataset)} rows, {len(NFLdataset.columns)} columns")
+    return NFLdataset

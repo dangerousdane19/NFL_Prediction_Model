@@ -1,0 +1,418 @@
+"""
+NFL Game Predictor — Streamlit App
+4 pages: Predict, History, Retrain, Model Info
+"""
+import logging
+import os
+import sys
+from datetime import date
+
+import pandas as pd
+import streamlit as st
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+logging.basicConfig(level=logging.INFO)
+
+from nfl import config, database
+from nfl.prediction.predict import predict_game
+
+# ── Page config ────────────────────────────────────────────────────────────────
+st.set_page_config(
+    page_title="NFL Predictor",
+    page_icon="🏈",
+    layout="wide",
+    initial_sidebar_state="expanded",
+)
+
+# ── Constants ──────────────────────────────────────────────────────────────────
+NFL_TEAMS = [
+    "ARI", "ATL", "BAL", "BUF", "CAR", "CHI", "CIN", "CLE",
+    "DAL", "DEN", "DET", "GB", "HOU", "IND", "JAX", "KC",
+    "LAC", "LAR", "LV", "MIA", "MIN", "NE", "NO", "NYG",
+    "NYJ", "PHI", "PIT", "SEA", "SF", "TB", "TEN", "WAS",
+]
+
+TEAM_FULL = {
+    "ARI": "Arizona Cardinals", "ATL": "Atlanta Falcons", "BAL": "Baltimore Ravens",
+    "BUF": "Buffalo Bills", "CAR": "Carolina Panthers", "CHI": "Chicago Bears",
+    "CIN": "Cincinnati Bengals", "CLE": "Cleveland Browns", "DAL": "Dallas Cowboys",
+    "DEN": "Denver Broncos", "DET": "Detroit Lions", "GB": "Green Bay Packers",
+    "HOU": "Houston Texans", "IND": "Indianapolis Colts", "JAX": "Jacksonville Jaguars",
+    "KC": "Kansas City Chiefs", "LAC": "Los Angeles Chargers", "LAR": "Los Angeles Rams",
+    "LV": "Las Vegas Raiders", "MIA": "Miami Dolphins", "MIN": "Minnesota Vikings",
+    "NE": "New England Patriots", "NO": "New Orleans Saints", "NYG": "New York Giants",
+    "NYJ": "New York Jets", "PHI": "Philadelphia Eagles", "PIT": "Pittsburgh Steelers",
+    "SEA": "Seattle Seahawks", "SF": "San Francisco 49ers", "TB": "Tampa Bay Buccaneers",
+    "TEN": "Tennessee Titans", "WAS": "Washington Commanders",
+}
+
+PLAYING_SURFACES = {"Grass": 3, "Artificial": 1, "Dome": 2}
+STADIUM_TYPES = {"Outdoor": 2, "Dome": 1, "Retractable Dome": 3}
+
+REFEREE_IDS = {
+    "Unknown": 0, "Adrian Hill": 1, "Alex Kemp": 2, "Bill Vinovich": 3,
+    "Brad Allen": 4, "Brad Rogers": 5, "Carl Cheffers": 6, "Clay Martin": 7,
+    "Clete Blakeman": 8, "Craig Wrolstad": 9, "Jerome Boger": 10,
+    "John Hussey": 11, "Ron Torbert": 12, "Scott Novak": 13,
+    "Shawn Hochuli": 15, "Shawn Smith": 16, "Tra Blake": 17,
+    "Land Clark": 18, "Tony Corrente": 19,
+}
+
+
+@st.cache_resource
+def init_db():
+    database.create_all_tables()
+    return database.get_connection()
+
+
+@st.cache_data(ttl=300)
+def load_prediction_history():
+    return database.fetch_prediction_history(limit=200)
+
+
+@st.cache_data(ttl=600)
+def load_last_training_run():
+    return database.fetch_last_training_run()
+
+
+def models_exist() -> bool:
+    return all(
+        os.path.exists(os.path.join(config.MODEL_DIR, f))
+        for f in ["modelts.joblib", "modelas.joblib", "modelhs.joblib",
+                  "logreg_homecover.joblib", "logreg_awaycover.joblib",
+                  "logreg_betoutcome.joblib", "feature_columns.joblib"]
+    )
+
+
+# ── Sidebar navigation ─────────────────────────────────────────────────────────
+with st.sidebar:
+    st.title("🏈 NFL Predictor")
+    st.markdown("---")
+    page = st.radio(
+        "Navigate",
+        ["Predict a Game", "Prediction History", "Retrain / Refresh Data", "Model Info"],
+        label_visibility="collapsed",
+    )
+    st.markdown("---")
+    if models_exist():
+        st.success("Models loaded")
+    else:
+        st.warning("Models not trained yet\nGo to **Retrain** to train.")
+
+
+# ── Page: Predict a Game ───────────────────────────────────────────────────────
+if page == "Predict a Game":
+    st.title("Predict a Game")
+
+    if not models_exist():
+        st.error("No trained models found. Go to **Retrain / Refresh Data** to train the models first.")
+        st.stop()
+
+    col1, col2 = st.columns(2)
+    with col1:
+        st.subheader("Home Team")
+        home_team = st.selectbox("Home Team", NFL_TEAMS, index=NFL_TEAMS.index("KC"), key="home")
+        st.caption(TEAM_FULL.get(home_team, ""))
+    with col2:
+        st.subheader("Away Team")
+        away_team = st.selectbox("Away Team", NFL_TEAMS, index=NFL_TEAMS.index("SF"), key="away")
+        st.caption(TEAM_FULL.get(away_team, ""))
+
+    if home_team == away_team:
+        st.warning("Home and away teams must be different.")
+
+    col3, col4, col5 = st.columns(3)
+    with col3:
+        game_date = st.date_input("Game Date", value=date.today())
+    with col4:
+        season = st.number_input("Season (Year)", value=date.today().year, min_value=2020, max_value=2030, step=1)
+    with col5:
+        week = st.number_input("Week", value=1, min_value=1, max_value=22, step=1)
+
+    st.markdown("---")
+    st.subheader("Vegas Lines")
+    col6, col7, col8 = st.columns(3)
+    with col6:
+        over_under = st.number_input("Over/Under", value=45.0, min_value=20.0, max_value=80.0, step=0.5)
+    with col7:
+        home_spread = st.number_input("Home Point Spread", value=-3.0, min_value=-30.0, max_value=30.0, step=0.5,
+                                      help="Negative = home team favored")
+    with col8:
+        away_spread = st.number_input("Away Point Spread", value=3.0, min_value=-30.0, max_value=30.0, step=0.5)
+
+    col9, col10 = st.columns(2)
+    with col9:
+        home_ml = st.number_input("Home Money Line", value=-150, min_value=-2000, max_value=2000, step=5)
+    with col10:
+        away_ml = st.number_input("Away Money Line", value=130, min_value=-2000, max_value=2000, step=5)
+
+    with st.expander("Stadium & Advanced Options"):
+        col_s1, col_s2 = st.columns(2)
+        with col_s1:
+            surface = st.selectbox("Playing Surface", list(PLAYING_SURFACES.keys()), index=0)
+            stadium_type = st.selectbox("Stadium Type", list(STADIUM_TYPES.keys()), index=0)
+        with col_s2:
+            neutral_site = st.checkbox("Neutral Site", value=False)
+            referee = st.selectbox("Referee", list(REFEREE_IDS.keys()), index=0)
+
+        col_e1, col_e2 = st.columns(2)
+        with col_e1:
+            elo1 = st.number_input("Home ELO (pre-game)", value=1505.0, step=1.0)
+            qbelo1 = st.number_input("Home QB ELO (pre-game)", value=1505.0, step=1.0)
+        with col_e2:
+            elo2 = st.number_input("Away ELO (pre-game)", value=1495.0, step=1.0)
+            qbelo2 = st.number_input("Away QB ELO (pre-game)", value=1495.0, step=1.0)
+
+    st.markdown("---")
+    predict_btn = st.button("Predict", type="primary", disabled=(home_team == away_team))
+
+    if predict_btn:
+        game_inputs = {
+            "home_team": home_team,
+            "away_team": away_team,
+            "game_date": game_date,
+            "season": int(season),
+            "week": int(week),
+            "over_under": over_under,
+            "home_point_spread": home_spread,
+            "away_point_spread": away_spread,
+            "home_money_line": float(home_ml),
+            "away_money_line": float(away_ml),
+            "playing_surface": PLAYING_SURFACES[surface],
+            "stadium_type": STADIUM_TYPES[stadium_type],
+            "neutral": int(neutral_site),
+            "referee": REFEREE_IDS[referee],
+            "elo1_pre": elo1,
+            "elo2_pre": elo2,
+            "qbelo1_pre": qbelo1,
+            "qbelo2_pre": qbelo2,
+        }
+
+        with st.spinner("Running models..."):
+            try:
+                result = predict_game(game_inputs)
+            except Exception as e:
+                st.error(f"Prediction failed: {e}")
+                st.stop()
+
+        # Strategy warnings
+        if result["stat_strategy_used"] == "prior_season_avg":
+            st.warning("Using prior-season averages — no current season data available yet. Accuracy may be lower.")
+        elif result["stat_strategy_used"] == "empty":
+            st.warning("No historical stats found for this team. Predictions are based on Vegas lines and context only.")
+
+        st.markdown("---")
+        st.subheader("Results")
+
+        # Scores
+        rc1, rc2, rc3 = st.columns(3)
+        with rc1:
+            st.metric(f"Predicted {home_team} Score", f"{result['home_score']:.1f}")
+        with rc2:
+            st.metric(f"Predicted {away_team} Score", f"{result['away_score']:.1f}")
+        with rc3:
+            st.metric("Predicted Total", f"{result['total_score']:.1f}",
+                      delta=f"Vegas O/U: {over_under}", delta_color="off")
+
+        # Winner
+        winner_team = home_team if result["predicted_winner"] == "HOME" else away_team
+        margin = abs(result["home_score"] - result["away_score"])
+        st.markdown(f"### Predicted Winner: **{winner_team}** by {margin:.1f} pts")
+
+        st.markdown("---")
+        st.subheader("Betting Predictions")
+        bc1, bc2, bc3 = st.columns(3)
+        with bc1:
+            cover_label = "COVER" if result["home_cover"] == 0 else "PUSH / NO COVER"
+            st.metric(
+                f"{home_team} Spread ({home_spread:+.1f})",
+                cover_label,
+                f"{result['home_cover_proba']:.0%} confidence",
+            )
+        with bc2:
+            acover_label = "COVER" if result["away_cover"] == 0 else "PUSH / NO COVER"
+            st.metric(
+                f"{away_team} Spread ({away_spread:+.1f})",
+                acover_label,
+                f"{result['away_cover_proba']:.0%} confidence",
+            )
+        with bc3:
+            ou_label = "OVER" if result["bet_outcome"] == 0 else "PUSH / UNDER"
+            st.metric(
+                f"Over/Under ({over_under})",
+                ou_label,
+                f"{result['bet_outcome_proba']:.0%} confidence",
+            )
+
+        # Invalidate history cache
+        load_prediction_history.clear()
+
+
+# ── Page: Prediction History ───────────────────────────────────────────────────
+elif page == "Prediction History":
+    st.title("Prediction History")
+
+    df = load_prediction_history()
+
+    if df.empty:
+        st.info("No predictions yet. Make a prediction on the **Predict a Game** page.")
+    else:
+        # Filters
+        col1, col2 = st.columns(2)
+        with col1:
+            team_filter = st.multiselect("Filter by Team", NFL_TEAMS)
+        with col2:
+            seasons = sorted(df["season"].dropna().unique().astype(int).tolist(), reverse=True)
+            season_filter = st.selectbox("Season", ["All"] + seasons)
+
+        if team_filter:
+            df = df[df["home_team"].isin(team_filter) | df["away_team"].isin(team_filter)]
+        if season_filter != "All":
+            df = df[df["season"] == int(season_filter)]
+
+        st.caption(f"Showing {len(df)} predictions")
+        st.dataframe(
+            df[[
+                "created_at", "home_team", "away_team", "season", "week", "game_date",
+                "over_under_input", "home_point_spread_input",
+                "pred_home_score", "pred_away_score", "pred_total_score",
+                "pred_winner", "pred_home_cover_proba", "pred_away_cover_proba",
+                "pred_bet_outcome_proba", "stat_strategy_used",
+                "actual_home_score", "actual_away_score",
+            ]],
+            column_config={
+                "created_at": st.column_config.TextColumn("Predicted At"),
+                "home_team": "Home",
+                "away_team": "Away",
+                "pred_home_score": st.column_config.NumberColumn("Pred Home", format="%.1f"),
+                "pred_away_score": st.column_config.NumberColumn("Pred Away", format="%.1f"),
+                "pred_total_score": st.column_config.NumberColumn("Pred Total", format="%.1f"),
+                "pred_home_cover_proba": st.column_config.ProgressColumn("Home Cover %", format="%.0f%%", min_value=0, max_value=1),
+                "pred_away_cover_proba": st.column_config.ProgressColumn("Away Cover %", format="%.0f%%", min_value=0, max_value=1),
+                "pred_bet_outcome_proba": st.column_config.ProgressColumn("Over %", format="%.0f%%", min_value=0, max_value=1),
+                "actual_home_score": st.column_config.NumberColumn("Actual Home", format="%.0f"),
+                "actual_away_score": st.column_config.NumberColumn("Actual Away", format="%.0f"),
+            },
+            use_container_width=True,
+            hide_index=True,
+        )
+
+
+# ── Page: Retrain / Refresh Data ──────────────────────────────────────────────
+elif page == "Retrain / Refresh Data":
+    st.title("Retrain / Refresh Data")
+
+    last_run = load_last_training_run()
+    if last_run:
+        st.info(f"Last training run: {last_run.get('run_at', 'Unknown')} — {last_run.get('num_records', '?')} records")
+    else:
+        st.info("No training runs recorded yet.")
+
+    st.markdown("---")
+    col1, col2 = st.columns(2)
+
+    with col1:
+        st.subheader("Refresh Data")
+        st.caption("Pulls latest stats, odds, and referee data from all APIs.")
+        if st.button("Refresh Data", type="secondary"):
+            with st.spinner("Fetching data from APIs (this may take 10-30 minutes)..."):
+                try:
+                    from scripts.run_ingestion import run as run_ingestion
+                    run_ingestion()
+                    load_last_training_run.clear()
+                    st.success("Data refreshed successfully.")
+                except Exception as e:
+                    st.error(f"Ingestion failed: {e}")
+
+    with col2:
+        st.subheader("Retrain Models")
+        st.caption("Rebuilds the dataset from DB and retrains all 6 models.")
+        if st.button("Retrain Models", type="primary"):
+            with st.spinner("Training models (2-5 minutes)..."):
+                try:
+                    from scripts.run_training import run as run_training
+                    run_training()
+                    load_last_training_run.clear()
+                    st.success("Models retrained successfully.")
+                    st.balloons()
+                except Exception as e:
+                    st.error(f"Training failed: {e}")
+
+    st.markdown("---")
+    st.subheader("Run Both (Full Pipeline)")
+    st.caption("Refresh data then immediately retrain. Use this for a full update.")
+    if st.button("Refresh + Retrain", type="primary"):
+        with st.spinner("Running full pipeline..."):
+            try:
+                from scripts.run_ingestion import run as run_ingestion
+                from scripts.run_training import run as run_training
+                run_ingestion()
+                run_training()
+                load_last_training_run.clear()
+                st.success("Full pipeline complete.")
+                st.balloons()
+            except Exception as e:
+                st.error(f"Pipeline failed: {e}")
+
+
+# ── Page: Model Info ───────────────────────────────────────────────────────────
+elif page == "Model Info":
+    st.title("Model Info")
+
+    last_run = load_last_training_run()
+
+    if not last_run:
+        st.info("No training runs found. Train the models first.")
+    else:
+        st.subheader("Last Training Run")
+        m1, m2, m3 = st.columns(3)
+        with m1:
+            st.metric("Total Score RMSE", f"{last_run.get('modelts_rmse', 0):.2f} pts")
+            st.metric("Away Score RMSE", f"{last_run.get('modelas_rmse', 0):.2f} pts")
+            st.metric("Home Score RMSE", f"{last_run.get('modelhs_rmse', 0):.2f} pts")
+        with m2:
+            st.metric("Home Cover Accuracy", f"{last_run.get('logreg_home_accuracy', 0):.1%}")
+            st.metric("Away Cover Accuracy", f"{last_run.get('logreg_away_accuracy', 0):.1%}")
+            st.metric("Over/Under Accuracy", f"{last_run.get('logreg_bet_accuracy', 0):.1%}")
+        with m3:
+            st.metric("Training Records", f"{last_run.get('num_records', 0):,}")
+            st.metric("Trained At", str(last_run.get("run_at", ""))[:16])
+
+    st.markdown("---")
+    st.subheader("Model Descriptions")
+    st.markdown("""
+| Model | Type | Target | Algorithm |
+|---|---|---|---|
+| `modelts` | Regression | Total combined score | XGBoost (n=400, depth=3, lr=0.1) |
+| `modelas` | Regression | Away team score | XGBoost (n=300, depth=3, lr=0.1) |
+| `modelhs` | Regression | Home team score | XGBoost (n=300, depth=3, lr=0.1) |
+| `logreg_homecover` | Classification | Home team covers spread | Logistic Regression |
+| `logreg_awaycover` | Classification | Away team covers spread | Logistic Regression |
+| `logreg_betoutcome` | Classification | Over/Under outcome | Logistic Regression |
+""")
+
+    if models_exist():
+        st.markdown("---")
+        st.subheader("Feature Importance (XGBoost — Total Score)")
+        try:
+            import joblib
+            import matplotlib.pyplot as plt
+            from xgboost import plot_importance
+
+            modelts = joblib.load(os.path.join(config.MODEL_DIR, "modelts.joblib"))
+            fig, ax = plt.subplots(figsize=(8, 6))
+            plot_importance(modelts, max_num_features=15, ax=ax)
+            ax.set_title("Top 15 Features — Total Score Model")
+            st.pyplot(fig)
+        except Exception as e:
+            st.caption(f"Feature importance chart unavailable: {e}")
+
+    st.markdown("---")
+    st.subheader("Data Sources")
+    st.markdown("""
+- **SportsData.io** — Stadium metadata, team game statistics (2020-2024), betting odds
+- **nflpenalties.com** — Referee assignments (scraped)
+- **FiveThirtyEight** — Team ELO and QB ELO ratings (with cached fallback)
+- **Google Trends** — Team search interest (optional, disabled by default)
+""")
