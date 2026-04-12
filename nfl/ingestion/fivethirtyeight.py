@@ -19,11 +19,18 @@ TEAM_RENAMES = {"OAK": "LV", "WSH": "WAS", "STL": "LAR", "SD": "LAC"}
 
 def fetch_elo_ratings() -> pd.DataFrame:
     df = None
+    # Try live URL first (sniff columns before committing to usecols)
     try:
-        df = pd.read_csv(FTE_URL, usecols=KEEP_COLS, low_memory=False)
-        log.info("Loaded ELO from live FiveThirtyEight URL")
+        raw = pd.read_csv(FTE_URL, nrows=1, low_memory=False)
+        if all(c in raw.columns for c in KEEP_COLS):
+            df = pd.read_csv(FTE_URL, usecols=KEEP_COLS, low_memory=False)
+            log.info("Loaded ELO from live FiveThirtyEight URL")
+        else:
+            log.warning(f"FTE URL returned unexpected columns: {list(raw.columns)[:5]} — trying cache")
     except Exception as e:
         log.warning(f"FTE live URL failed ({e}), trying cache...")
+
+    if df is None:
         cache_path = os.path.abspath(FTE_CACHE)
         if os.path.exists(cache_path):
             try:

@@ -91,7 +91,7 @@ def run():
 
         # 4. Referee assignments
         log.info("Scraping referee assignments (this takes several minutes)...")
-        df_refs = referee_scraper.fetch_referee_assignments(years=[2020, 2021, 2022, 2023, 2024])
+        df_refs = referee_scraper.fetch_referee_assignments(years=config.TRAINING_SEASONS)
         if not df_refs.empty:
             database.upsert_df(df_refs, "referee_assignments", conn)
             log.info(f"  Stored {len(df_refs)} referee assignment rows")

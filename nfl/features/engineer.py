@@ -14,7 +14,7 @@ log = logging.getLogger(__name__)
 DROP_COLS_REGRESSION = [
     "Season_y", "ScoreId", "Day", "HomeRotationNumber", "AwayRotationNumber",
     "PregameOdds", "GameOddId", "Sportsbook", "Created", "Updated",
-    "DrawMoneyLine", "SportsbookId", "Team", "AwayTeamScore", "Date",
+    "DrawMoneyLine", "SportsbookId", "Team", "Date",
     "DayOfWeek", "GameKey", "HomeOrAway", "month_y", "Opponent",
     "OpponentScoreOvertime", "OpponentScoreQuarter1", "OpponentScoreQuarter2",
     "OpponentScoreQuarter3", "OpponentScoreQuarter4", "Score", "ScoreID",
@@ -92,7 +92,7 @@ def prepare_model_data(NFLdataset: pd.DataFrame) -> tuple:
     NFLmodeldata = NFLdataset.drop(columns=drop_reg).copy()
     # Keep only numeric columns for fillna
     num_cols = NFLmodeldata.select_dtypes(include="number").columns
-    NFLmodeldata[num_cols] = NFLmodeldata[num_cols].fillna(NFLmodeldata[num_cols].mean())
+    NFLmodeldata[num_cols] = NFLmodeldata[num_cols].fillna(NFLmodeldata[num_cols].mean()).fillna(0)
 
     # --- Classification dataset ---
     NFLmodeldata1 = NFLdataset.copy()
@@ -109,7 +109,7 @@ def prepare_model_data(NFLdataset: pd.DataFrame) -> tuple:
     drop_cls = [c for c in DROP_COLS_CLASSIFICATION if c in NFLmodeldata1.columns]
     NFLmodeldata1.drop(columns=drop_cls, inplace=True)
     num_cols1 = NFLmodeldata1.select_dtypes(include="number").columns
-    NFLmodeldata1[num_cols1] = NFLmodeldata1[num_cols1].fillna(NFLmodeldata1[num_cols1].mean())
+    NFLmodeldata1[num_cols1] = NFLmodeldata1[num_cols1].fillna(NFLmodeldata1[num_cols1].mean()).fillna(0)
 
     log.info(f"NFLmodeldata: {len(NFLmodeldata)} rows × {len(NFLmodeldata.columns)} cols")
     log.info(f"NFLmodeldata1: {len(NFLmodeldata1)} rows × {len(NFLmodeldata1.columns)} cols")

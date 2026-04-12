@@ -45,6 +45,10 @@ def run():
     }
     betting_odds.rename(columns={k: v for k, v in col_renames.items() if k in betting_odds.columns}, inplace=True)
 
+    # Alias AwayTeamScore → OpponentScore so training targets are consistent
+    if "AwayTeamScore" in betting_odds.columns and "OpponentScore" not in betting_odds.columns:
+        betting_odds["OpponentScore"] = betting_odds["AwayTeamScore"]
+
     # teamstats needs TotalScore column
     if "TotalScore" not in teamstats.columns and "TotalScore_x" not in teamstats.columns:
         log.warning("TotalScore not found in team_game_stats — check ingestion")
@@ -75,11 +79,16 @@ def run():
     log.info(f"Training on {len(NFLmodeldata)} records...")
     metrics = train_all_models(NFLmodeldata, NFLmodeldata1)
 
-    # Log training run to DB
+    # Log training run to DB (only columns defined in training_runs schema)
     run_record = {
         "seasons_trained": json.dumps(config.TRAINING_SEASONS),
         "num_records": len(NFLmodeldata),
-        **metrics,
+        "modelts_rmse": metrics.get("modelts_rmse"),
+        "modelas_rmse": metrics.get("modelas_rmse"),
+        "modelhs_rmse": metrics.get("modelhs_rmse"),
+        "logreg_home_accuracy": metrics.get("logreg_home_accuracy"),
+        "logreg_away_accuracy": metrics.get("logreg_away_accuracy"),
+        "logreg_bet_accuracy": metrics.get("logreg_bet_accuracy"),
     }
     database.insert_training_run(run_record)
 

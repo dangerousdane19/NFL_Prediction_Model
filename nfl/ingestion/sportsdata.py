@@ -34,6 +34,10 @@ def _get(url: str) -> list:
         r = requests.get(url, headers=_headers(), timeout=15)
         if r.status_code == 200:
             return r.json()
+        elif r.status_code == 401:
+            log.warning(f"401 Unauthorized: {url} — season may not be in your subscription")
+        else:
+            log.warning(f"HTTP {r.status_code}: {url}")
     except Exception as e:
         log.warning(f"Request failed: {url} — {e}")
     return []
