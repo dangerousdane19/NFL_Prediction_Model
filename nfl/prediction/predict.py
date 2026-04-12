@@ -10,6 +10,7 @@ import pandas as pd
 
 from nfl import database
 from nfl.features.season_averages import get_team_stat_vector
+from nfl.ingestion.elo_calculator import get_current_elo
 from nfl.training.train import load_models
 
 log = logging.getLogger(__name__)
@@ -118,6 +119,20 @@ def predict_game(game_inputs: dict, conn=None) -> dict:
         _close_conn = False
 
     stat_vector, strategy_used = get_team_stat_vector(home_team, season, conn=conn)
+
+    # Auto-fill ELO from calculator if not provided by caller
+    if not game_inputs.get("elo1_pre") or not game_inputs.get("elo2_pre"):
+        try:
+            current_elo = get_current_elo(conn)
+            away_team = game_inputs.get("away_team", "")
+            home_elo_data = current_elo.get(home_team, {})
+            away_elo_data = current_elo.get(away_team, {})
+            game_inputs.setdefault("elo1_pre", home_elo_data.get("elo", 1500.0))
+            game_inputs.setdefault("elo2_pre", away_elo_data.get("elo", 1500.0))
+            game_inputs.setdefault("qbelo1_pre", home_elo_data.get("qbelo", 1500.0))
+            game_inputs.setdefault("qbelo2_pre", away_elo_data.get("qbelo", 1500.0))
+        except Exception as e:
+            log.warning(f"ELO auto-fill failed: {e}")
 
     if _close_conn:
         conn.close()

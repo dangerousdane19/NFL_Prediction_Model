@@ -14,6 +14,7 @@ log = logging.getLogger(__name__)
 
 from nfl import config, database
 from nfl.ingestion import fivethirtyeight, google_trends, referee_scraper, sportsdata
+from nfl.ingestion.elo_calculator import calculate_elo_ratings
 
 
 def run():
@@ -96,9 +97,9 @@ def run():
             database.upsert_df(df_refs, "referee_assignments", conn)
             log.info(f"  Stored {len(df_refs)} referee assignment rows")
 
-        # 5. ELO ratings
-        log.info("Fetching FiveThirtyEight ELO ratings...")
-        df_elo = fivethirtyeight.fetch_elo_ratings()
+        # 5. ELO ratings — calculated from completed game results
+        log.info("Calculating ELO ratings from game results...")
+        df_elo = calculate_elo_ratings(conn)
         if not df_elo.empty:
             database.upsert_df(df_elo, "elo_ratings", conn)
             log.info(f"  Stored {len(df_elo)} ELO rows")
