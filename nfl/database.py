@@ -305,6 +305,12 @@ def fetch_prediction_history(limit: int = 200) -> pd.DataFrame:
         )
 
 
+def delete_prediction(prediction_id: int) -> None:
+    ph = "?" if not _is_postgres() else "%s"
+    with managed_conn() as conn:
+        conn.cursor().execute(f"DELETE FROM predictions WHERE id = {ph}", (prediction_id,))
+
+
 def fetch_last_training_run() -> dict:
     with managed_conn() as conn:
         df = pd.read_sql(

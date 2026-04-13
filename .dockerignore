@@ -1,0 +1,56 @@
+# Version control
+.git
+.gitignore
+
+# Python cache
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info
+dist/
+build/
+.eggs/
+
+# Virtual environments
+.venv
+venv/
+env/
+ENV/
+
+# Jupyter notebooks (large, not needed at runtime)
+*.ipynb
+.ipynb_checkpoints/
+
+# Secrets — never bake into image
+.env
+.env.*
+*.env
+.streamlit/secrets.toml
+
+# Data directory — SQLite DB is mounted via EFS at runtime
+# Baking the DB into the image would reset prediction history on every deploy
+data/
+
+# Infrastructure code — not needed in container
+infrastructure/
+*.tf
+*.tfvars
+*.tfstate
+*.tfstate.backup
+.terraform/
+
+# macOS
+.DS_Store
+**/.DS_Store
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Logs
+*.log
+logs/
