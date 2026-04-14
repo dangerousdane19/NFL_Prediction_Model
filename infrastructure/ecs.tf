@@ -144,11 +144,5 @@ resource "aws_ecs_service" "app" {
     aws_iam_role_policy_attachment.ecs_execution_managed,
   ]
 
-  # Ignore task_definition changes — deployments are triggered by updating
-  # var.ecr_image_uri and running terraform apply, not by in-place task def changes
-  lifecycle {
-    ignore_changes = [task_definition]
-  }
-
   tags = { Name = "${local.name_prefix}-service" }
 }
