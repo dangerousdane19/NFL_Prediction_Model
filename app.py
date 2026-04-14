@@ -51,6 +51,9 @@ TEAM_FULL = {
 PLAYING_SURFACES = {"Grass": 3, "Artificial": 1, "Dome": 2}
 STADIUM_TYPES = {"Outdoor": 2, "Dome": 1, "Retractable Dome": 3}
 
+# Ensure all DB tables exist on every cold start (critical on fresh EFS volume)
+init_db()
+
 REFEREE_IDS = {
     "Unknown": 0, "Adrian Hill": 1, "Alex Kemp": 2, "Bill Vinovich": 3,
     "Brad Allen": 4, "Brad Rogers": 5, "Carl Cheffers": 6, "Clay Martin": 7,

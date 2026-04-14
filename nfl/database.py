@@ -312,11 +312,14 @@ def delete_prediction(prediction_id: int) -> None:
 
 
 def fetch_last_training_run() -> dict:
-    with managed_conn() as conn:
-        df = pd.read_sql(
-            "SELECT * FROM training_runs ORDER BY run_at DESC LIMIT 1", conn
-        )
-    return df.iloc[0].to_dict() if not df.empty else {}
+    try:
+        with managed_conn() as conn:
+            df = pd.read_sql(
+                "SELECT * FROM training_runs ORDER BY run_at DESC LIMIT 1", conn
+            )
+        return df.iloc[0].to_dict() if not df.empty else {}
+    except Exception:
+        return {}
 
 
 def insert_training_run(record: dict) -> None:
