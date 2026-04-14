@@ -7,7 +7,7 @@ resource "aws_vpc" "main" {
   tags = { Name = "${local.name_prefix}-vpc" }
 }
 
-# ── Public Subnets (ALB + NAT Gateway) ────────────────────────────────────────
+# ── Public Subnets (ALB + ECS tasks) ─────────────────────────────────────────
 resource "aws_subnet" "public_a" {
   vpc_id                  = aws_vpc.main.id
   cidr_block              = "10.0.1.0/24"
@@ -26,7 +26,7 @@ resource "aws_subnet" "public_b" {
   tags = { Name = "${local.name_prefix}-public-b" }
 }
 
-# ── Private Subnets (ECS tasks + EFS mount targets) ───────────────────────────
+# ── Private Subnets (EFS mount targets) ───────────────────────────────────────
 resource "aws_subnet" "private_a" {
   vpc_id            = aws_vpc.main.id
   cidr_block        = "10.0.10.0/24"
@@ -50,22 +50,6 @@ resource "aws_internet_gateway" "main" {
   tags = { Name = "${local.name_prefix}-igw" }
 }
 
-# ── NAT Gateway (single, in public-a — add public-b NAT for HA if needed) ─────
-resource "aws_eip" "nat" {
-  domain = "vpc"
-
-  tags = { Name = "${local.name_prefix}-nat-eip" }
-}
-
-resource "aws_nat_gateway" "main" {
-  allocation_id = aws_eip.nat.id
-  subnet_id     = aws_subnet.public_a.id
-
-  tags = { Name = "${local.name_prefix}-nat" }
-
-  depends_on = [aws_internet_gateway.main]
-}
-
 # ── Route Tables ──────────────────────────────────────────────────────────────
 resource "aws_route_table" "public" {
   vpc_id = aws_vpc.main.id
@@ -80,11 +64,6 @@ resource "aws_route_table" "public" {
 
 resource "aws_route_table" "private" {
   vpc_id = aws_vpc.main.id
-
-  route {
-    cidr_block     = "0.0.0.0/0"
-    nat_gateway_id = aws_nat_gateway.main.id
-  }
 
   tags = { Name = "${local.name_prefix}-rt-private" }
 }
