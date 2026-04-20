@@ -81,6 +81,47 @@ def _bet_outcome(row) -> str:
         return "Lose"
 
 
+def _add_weather_features(df: pd.DataFrame) -> pd.DataFrame:
+    """Engineer weather flags. Dome games get neutral indoor values before flagging."""
+    weather_present = "temperature" in df.columns or "wind_speed" in df.columns
+
+    if not weather_present:
+        return df
+
+    # Fill dome games with neutral indoor conditions before computing flags
+    if "is_dome" in df.columns:
+        dome_mask = df["is_dome"] == 1
+        for col, val in [("temperature", 72.0), ("wind_speed", 0.0),
+                         ("wind_direction", 0.0), ("precipitation", 0.0),
+                         ("snowfall", 0.0), ("weather_code", 0)]:
+            if col in df.columns:
+                df.loc[dome_mask, col] = df.loc[dome_mask, col].fillna(val)
+
+    # Fill remaining NaNs (outdoor games with missing data) with column means
+    for col in ["temperature", "wind_speed", "precipitation", "snowfall"]:
+        if col in df.columns:
+            df[col] = df[col].fillna(df[col].mean())
+
+    # Engineered flags
+    if "wind_speed" in df.columns:
+        df["high_wind"] = (df["wind_speed"] > 15).astype(int)
+    if "precipitation" in df.columns:
+        df["is_precipitation"] = (df["precipitation"] > 0).astype(int)
+    if "temperature" in df.columns:
+        df["freezing"] = (df["temperature"] < 32).astype(int)
+
+    # Combined bad-weather index (0–3)
+    wind_flag = df.get("high_wind", pd.Series(0, index=df.index))
+    precip_flag = df.get("is_precipitation", pd.Series(0, index=df.index))
+    freeze_flag = df.get("freezing", pd.Series(0, index=df.index))
+    df["bad_weather_index"] = wind_flag + precip_flag + freeze_flag
+
+    if "is_dome" not in df.columns:
+        df["is_dome"] = 0
+
+    return df
+
+
 def prepare_model_data(NFLdataset: pd.DataFrame) -> tuple:
     """
     Returns (NFLmodeldata, NFLmodeldata1).
@@ -90,12 +131,14 @@ def prepare_model_data(NFLdataset: pd.DataFrame) -> tuple:
     # --- Regression dataset ---
     drop_reg = [c for c in DROP_COLS_REGRESSION if c in NFLdataset.columns]
     NFLmodeldata = NFLdataset.drop(columns=drop_reg).copy()
+    NFLmodeldata = _add_weather_features(NFLmodeldata)
     # Keep only numeric columns for fillna
     num_cols = NFLmodeldata.select_dtypes(include="number").columns
     NFLmodeldata[num_cols] = NFLmodeldata[num_cols].fillna(NFLmodeldata[num_cols].mean()).fillna(0)
 
     # --- Classification dataset ---
     NFLmodeldata1 = NFLdataset.copy()
+    NFLmodeldata1 = _add_weather_features(NFLmodeldata1)
 
     # Add cover targets (Cells 125-127)
     NFLmodeldata1["HomeTeamCover"] = NFLmodeldata1.apply(_home_cover, axis=1)

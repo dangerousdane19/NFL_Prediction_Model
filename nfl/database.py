@@ -184,6 +184,20 @@ def create_all_tables() -> None:
                 notes                   TEXT
             );
 
+            CREATE TABLE IF NOT EXISTS weather (
+                HomeTeamName    TEXT NOT NULL,
+                year            INTEGER NOT NULL,
+                dayofyear       INTEGER NOT NULL,
+                temperature     REAL,
+                wind_speed      REAL,
+                wind_direction  REAL,
+                precipitation   REAL,
+                snowfall        REAL,
+                weather_code    INTEGER,
+                is_dome         INTEGER DEFAULT 0,
+                PRIMARY KEY (HomeTeamName, year, dayofyear)
+            );
+
             CREATE TABLE IF NOT EXISTS training_runs (
                 id                      INTEGER PRIMARY KEY AUTOINCREMENT,
                 run_at                  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -257,6 +271,11 @@ def _create_postgres_tables(cur) -> None:
             stat_strategy_used TEXT, google_trends_used INTEGER,
             actual_home_score REAL, actual_away_score REAL,
             actual_total_score REAL, actual_winner TEXT, notes TEXT)""",
+        """CREATE TABLE IF NOT EXISTS weather (
+            "HomeTeamName" TEXT NOT NULL, year INTEGER NOT NULL, dayofyear INTEGER NOT NULL,
+            temperature REAL, wind_speed REAL, wind_direction REAL,
+            precipitation REAL, snowfall REAL, weather_code INTEGER, is_dome INTEGER DEFAULT 0,
+            PRIMARY KEY ("HomeTeamName", year, dayofyear))""",
         """CREATE TABLE IF NOT EXISTS training_runs (
             id SERIAL PRIMARY KEY, run_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             seasons_trained TEXT, num_records INTEGER,

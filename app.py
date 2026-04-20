@@ -411,6 +411,29 @@ if page == "Predict a Game":
                 f"{result['bet_outcome_proba']:.0%} confidence",
             )
 
+        # Weather conditions used
+        wx = result.get("weather")
+        if wx and not wx.get("is_dome"):
+            st.markdown("---")
+            st.subheader("Weather Conditions")
+            wc1, wc2, wc3, wc4 = st.columns(4)
+            temp = wx.get("temperature_2m") or wx.get("temperature")
+            wind = wx.get("wind_speed_10m") or wx.get("wind_speed")
+            precip = wx.get("precipitation")
+            snow = wx.get("snowfall")
+            with wc1:
+                st.metric("Temperature", f"{temp:.0f}°F" if temp is not None else "N/A")
+            with wc2:
+                st.metric("Wind Speed", f"{wind:.0f} mph" if wind is not None else "N/A",
+                          delta="⚠️ High wind" if wind and wind > 15 else None,
+                          delta_color="inverse")
+            with wc3:
+                st.metric("Precipitation", f"{precip:.2f} mm/hr" if precip is not None else "N/A")
+            with wc4:
+                st.metric("Snowfall", f"{snow:.1f} cm" if snow else "None")
+        elif wx and wx.get("is_dome"):
+            st.info("🏟️ Indoor/dome stadium — weather not applicable.")
+
         # Invalidate history cache
         load_prediction_history.clear()
 
@@ -581,10 +604,36 @@ elif page == "Model Info":
             from xgboost import plot_importance
 
             modelts = joblib.load(os.path.join(config.MODEL_DIR, "modelts.joblib"))
+            feature_cols = joblib.load(os.path.join(config.MODEL_DIR, "feature_columns.joblib"))
+
             fig, ax = plt.subplots(figsize=(8, 6))
-            plot_importance(modelts, max_num_features=15, ax=ax)
-            ax.set_title("Top 15 Features — Total Score Model")
+            plot_importance(modelts, max_num_features=20, ax=ax)
+            ax.set_title("Top 20 Features — Total Score Model")
             st.pyplot(fig)
+
+            # Show weather feature importance specifically
+            weather_features = [
+                "temperature", "wind_speed", "wind_direction", "precipitation",
+                "snowfall", "weather_code", "is_dome",
+                "high_wind", "is_precipitation", "freezing", "bad_weather_index",
+            ]
+            importances = dict(zip(feature_cols, modelts.feature_importances_))
+            weather_imp = {f: importances[f] for f in weather_features if f in importances}
+            if weather_imp:
+                st.markdown("**Weather Feature Importances:**")
+                imp_df = pd.DataFrame(
+                    sorted(weather_imp.items(), key=lambda x: x[1], reverse=True),
+                    columns=["Feature", "Importance"],
+                )
+                st.dataframe(imp_df, hide_index=True, use_container_width=False)
+                total_weather_imp = sum(weather_imp.values())
+                total_imp = sum(modelts.feature_importances_)
+                pct = total_weather_imp / total_imp * 100 if total_imp > 0 else 0
+                st.caption(
+                    f"Weather features account for **{pct:.1f}%** of total feature importance in the Total Score model."
+                )
+            else:
+                st.caption("Weather features not found in this model — retrain after running ingestion.")
         except Exception as e:
             st.caption(f"Feature importance chart unavailable: {e}")
 

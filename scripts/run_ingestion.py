@@ -15,6 +15,7 @@ log = logging.getLogger(__name__)
 from nfl import config, database
 from nfl.ingestion import fivethirtyeight, google_trends, referee_scraper, sportsdata
 from nfl.ingestion.elo_calculator import calculate_elo_ratings
+from nfl.ingestion.weather import backfill_weather
 
 
 def run():
@@ -113,6 +114,15 @@ def run():
                 log.info(f"  Stored {len(df_trends)} Google Trends rows")
         else:
             log.info("Google Trends disabled — skipping")
+
+        # 7. Weather data (Open-Meteo — free, no key required)
+        log.info("Fetching weather data from Open-Meteo...")
+        df_weather = backfill_weather(conn)
+        if not df_weather.empty:
+            database.upsert_df(df_weather, "weather", conn)
+            log.info(f"  Stored {len(df_weather)} weather rows")
+        else:
+            log.info("  No new weather data to store")
 
     log.info("=== Ingestion complete ===")
 

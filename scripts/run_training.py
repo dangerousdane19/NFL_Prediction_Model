@@ -38,6 +38,11 @@ def run():
         except Exception:
             google_trends = pd.DataFrame()
 
+        try:
+            weather_df = pd.read_sql("SELECT * FROM weather", conn)
+        except Exception:
+            weather_df = pd.DataFrame()
+
     # Rename betting_odds columns to match notebook expectations
     col_renames = {
         "Season": "Season_x",
@@ -61,6 +66,7 @@ def run():
         referee_assignments=referee_assignments,
         elo_ratings=elo_ratings,
         google_trends=google_trends,
+        weather_df=weather_df,
     )
 
     if NFLdataset.empty:

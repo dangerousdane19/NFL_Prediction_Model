@@ -11,6 +11,7 @@ import pandas as pd
 from nfl import database
 from nfl.features.season_averages import get_team_stat_vector
 from nfl.ingestion.elo_calculator import get_current_elo
+from nfl.ingestion.weather import fetch_game_weather, get_team_coords
 from nfl.training.train import load_models
 
 log = logging.getLogger(__name__)
@@ -20,6 +21,7 @@ def build_feature_vector(
     game_inputs: dict,
     stat_vector: dict,
     feature_columns: list,
+    weather: dict = None,
 ) -> pd.DataFrame:
     """
     Construct a single-row DataFrame matching the training feature set.
@@ -33,6 +35,7 @@ def build_feature_vector(
       home_google_trend, away_google_trend
 
     stat_vector keys: TeamGameStats column averages for the home team
+    weather: dict from fetch_game_weather (optional)
     feature_columns: ordered list saved at training time
     """
     gd = game_inputs.get("game_date") or date.today()
@@ -77,6 +80,35 @@ def build_feature_vector(
         "Season_x": game_inputs.get("season", gd.year),
         "Week_x": game_inputs.get("week", 1),
     }
+
+    # Weather features
+    if weather:
+        is_dome = int(weather.get("is_dome", 0))
+        temp = weather.get("temperature_2m") or weather.get("temperature")
+        wind = weather.get("wind_speed_10m") or weather.get("wind_speed")
+        precip = weather.get("precipitation")
+
+        # Use neutral indoor values for dome games
+        if is_dome:
+            temp = temp if temp is not None else 72.0
+            wind = 0.0
+            precip = 0.0
+
+        row["temperature"] = temp if temp is not None else 55.0
+        row["wind_speed"] = wind if wind is not None else 8.0
+        row["wind_direction"] = (
+            weather.get("wind_direction_10m") or weather.get("wind_direction") or 0.0
+        )
+        row["precipitation"] = precip if precip is not None else 0.0
+        row["snowfall"] = weather.get("snowfall") or 0.0
+        row["weather_code"] = weather.get("weather_code") or 0
+        row["is_dome"] = is_dome
+
+        # Engineered flags (must match what engineer.py produces at training time)
+        row["high_wind"] = int(row["wind_speed"] > 15)
+        row["is_precipitation"] = int(row["precipitation"] > 0)
+        row["freezing"] = int(row["temperature"] < 32)
+        row["bad_weather_index"] = row["high_wind"] + row["is_precipitation"] + row["freezing"]
 
     # Overlay home-team stat averages
     row.update(stat_vector)
@@ -137,7 +169,25 @@ def predict_game(game_inputs: dict, conn=None) -> dict:
     if _close_conn:
         conn.close()
 
-    feature_vector = build_feature_vector(game_inputs, stat_vector, feature_columns)
+    # Auto-fetch weather from Open-Meteo unless caller already supplied it
+    weather = game_inputs.get("weather")
+    if weather is None:
+        try:
+            gd = game_inputs.get("game_date") or date.today()
+            if isinstance(gd, str):
+                gd = pd.to_datetime(gd).date()
+            lat, lon, is_dome = get_team_coords(home_team)
+            weather = fetch_game_weather(
+                lat, lon,
+                gd.strftime("%Y-%m-%d"),
+                gd.hour if hasattr(gd, "hour") else 13,
+                is_dome,
+            )
+        except Exception as e:
+            log.warning(f"Weather auto-fetch failed: {e}")
+            weather = None
+
+    feature_vector = build_feature_vector(game_inputs, stat_vector, feature_columns, weather=weather)
 
     # Regression predictions
     home_score = float(models["modelhs"].predict(feature_vector)[0])
@@ -173,6 +223,7 @@ def predict_game(game_inputs: dict, conn=None) -> dict:
         "bet_outcome_proba": round(bet_outcome_proba, 3),
         "stat_strategy_used": strategy_used,
         "google_trends_used": google_trends_used,
+        "weather": weather,
     }
 
     # Log prediction to DB

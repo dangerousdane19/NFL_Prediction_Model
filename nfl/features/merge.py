@@ -16,6 +16,7 @@ def build_nfl_dataset(
     referee_assignments: pd.DataFrame,
     elo_ratings: pd.DataFrame,
     google_trends: pd.DataFrame,
+    weather_df: pd.DataFrame = None,
 ) -> pd.DataFrame:
     """
     Replicates Cell 42 merge chain:
@@ -24,7 +25,8 @@ def build_nfl_dataset(
       3. df + elo → df
       4. df + teamstatswstadium → df  (home team stats)
       5. df + google_trends (home) → df
-      6. df + google_trends (away) → NFLdataset
+      6. df + google_trends (away) → df
+      7. df + weather → NFLdataset
     """
     if betting_odds.empty:
         log.warning("betting_odds is empty — cannot build dataset")
@@ -97,6 +99,21 @@ def build_nfl_dataset(
             NFLdataset[col] = 0
         else:
             NFLdataset[col].fillna(0, inplace=True)
+
+    # Step 7: Attach weather data
+    if weather_df is not None and not weather_df.empty:
+        weather_cols = [
+            "HomeTeamName", "year", "dayofyear",
+            "temperature", "wind_speed", "wind_direction",
+            "precipitation", "snowfall", "weather_code", "is_dome",
+        ]
+        available = [c for c in weather_cols if c in weather_df.columns]
+        NFLdataset = pd.merge(
+            NFLdataset,
+            weather_df[available],
+            on=["HomeTeamName", "year", "dayofyear"],
+            how="left",
+        )
 
     log.info(f"Built NFLdataset: {len(NFLdataset)} rows, {len(NFLdataset.columns)} columns")
     return NFLdataset
