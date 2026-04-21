@@ -22,6 +22,6 @@ MODEL_DIR: str = _get("MODEL_DIR", "models")
 GOOGLE_TRENDS_ENABLED: bool = _get("GOOGLE_TRENDS_ENABLED", "false").lower() == "true"
 
 # Seasons to ingest (REG + POST)
-TRAINING_SEASONS: list = [2025]
+TRAINING_SEASONS: list = [2022, 2023, 2024, 2025]
 REG_WEEKS: int = 18
 POST_WEEKS: int = 4

@@ -4,88 +4,100 @@ TARGET: TotalScore_x
 ======================================================================
   Feature                                 r     p-value  Sig
   --------------------------------  --------  ----------  ---
-  AwayTeamScore                      0.7047  4.4041e-44  ***
-  PassingYards                       0.5087  3.6231e-20  ***
-  FirstDowns                         0.4346  1.4749e-14  ***
-  RedZonePercentage                  0.3678  1.4730e-10  ***
-  OverUnder                          0.3038  1.6925e-07  ***
-  ThirdDownPercentage                0.2338  6.7481e-05  ***
-  snowfall                           0.1607  6.5466e-03  **
-  RushingYards                       0.1247  3.5293e-02  *
-  PlayingSurface                    -0.1233  3.7464e-02  *
-  month_x                            0.1084  6.7584e-02  .
-  month_y                            0.1084  6.7584e-02  .
-  temperature                        0.1068  7.1702e-02  .
-  year                              -0.1056  7.5105e-02  .
-  dayofyear                          0.1046  7.7834e-02  .
-  Penalties                          0.1037  8.0598e-02  .
-  wind_speed                        -0.1016  8.6822e-02  .
-  weekofyear_x                       0.0979  9.8999e-02  .
-  weekofyear_y                       0.0979  9.8999e-02  .
-  PenaltyYards                       0.0910  1.2538e-01   
-  FourthDownPercentage               0.0643  2.7902e-01   
-  freezing                          -0.0594  3.1768e-01   
-  weather_code                       0.0528  3.7472e-01   
-  UnderPayout                        0.0519  3.8245e-01   
-  precipitation                     -0.0510  3.9086e-01   
-  wind_direction                    -0.0477  4.2234e-01   
-  is_dome                            0.0472  4.2772e-01   
-  high_wind                          0.0432  4.6713e-01   
-  is_precipitation                   0.0397  5.0473e-01   
-  HomeMoneyLine                      0.0258  6.6414e-01   
-  dayofweek                          0.0251  6.7335e-01   
-  hour                               0.0225  7.0501e-01   
-  HomePointSpreadPayout              0.0180  7.6258e-01   
-  OverPayout                        -0.0139  8.1590e-01   
-  AwayPointSpreadPayout              0.0121  8.3935e-01   
-  HomePointSpread                    0.0120  8.3965e-01   
-  AwayPointSpread                   -0.0120  8.3965e-01   
-  bad_weather_index                  0.0095  8.7289e-01   
-  AwayMoneyLine                     -0.0032  9.5741e-01   
+  AwayTeamScore                      0.6701  1.5775e-112  ***
+  FirstDowns                         0.4746  3.1143e-49  ***
+  PassingYards                       0.4724  9.5806e-49  ***
+  RedZonePercentage                  0.4081  1.1857e-35  ***
+  OverUnder                          0.3145  4.3416e-21  ***
+  ThirdDownPercentage                0.2698  9.9585e-16  ***
+  RushingYards                       0.1537  6.3498e-06  ***
+  wind_speed                        -0.1483  1.3364e-05  ***
+  qbelo1_pre                         0.1462  1.7666e-05  ***
+  elo1_pre                           0.1462  1.7666e-05  ***
+  FourthDownPercentage               0.1050  2.1172e-03  **
+  temperature                        0.0977  4.2246e-03  **
+  is_dome                            0.0953  5.2836e-03  **
+  bad_weather_index                 -0.0817  1.6876e-02  *
+  PenaltyYards                       0.0798  1.9590e-02  *
+  is_precipitation                  -0.0767  2.4845e-02  *
+  PlayingSurface                    -0.0761  2.7549e-02  *
+  weather_code                      -0.0725  3.4077e-02  *
+  Penalties                          0.0679  4.7200e-02  *
+  Season                             0.0648  5.8400e-02  .
+  wind_direction                    -0.0629  6.5874e-02  .
+  AwayPointSpread                    0.0579  9.0926e-02  .
+  HomePointSpread                   -0.0579  9.0926e-02  .
+  precipitation                     -0.0561  1.0134e-01   
+  year                               0.0535  1.1822e-01   
+  AwayMoneyLine                      0.0520  1.2896e-01   
+  qbelo2_pre                         0.0507  1.3882e-01   
+  elo2_pre                           0.0507  1.3882e-01   
+  AwayPointSpreadPayout              0.0503  1.4198e-01   
+  HomeMoneyLine                     -0.0484  1.5777e-01   
+  high_wind                         -0.0395  2.4825e-01   
+  hour                               0.0340  3.2122e-01   
+  dayofyear                          0.0337  3.2525e-01   
+  month_x                            0.0332  3.3251e-01   
+  month_y                            0.0332  3.3251e-01   
+  snowfall                           0.0322  3.4745e-01   
+  freezing                          -0.0307  3.6941e-01   
+  HomePointSpreadPayout             -0.0267  4.3504e-01   
+  UnderPayout                        0.0238  4.8674e-01   
+  weekofyear_x                       0.0231  4.9947e-01   
+  weekofyear_y                       0.0231  4.9947e-01   
+  OverPayout                        -0.0210  5.3975e-01   
+  Referee                           -0.0071  8.6965e-01   
+  dayofweek                         -0.0062  8.5717e-01   
 
 ======================================================================
 TARGET: HomeTeamScore
 ======================================================================
   Feature                                 r     p-value  Sig
   --------------------------------  --------  ----------  ---
-  FirstDowns                         0.5715  4.1277e-26  ***
-  RedZonePercentage                  0.4757  1.6778e-17  ***
-  PassingYards                       0.4357  1.2445e-14  ***
-  ThirdDownPercentage                0.4166  2.1511e-13  ***
-  RushingYards                       0.3657  1.9047e-10  ***
-  HomePointSpread                   -0.3609  3.4078e-10  ***
-  AwayPointSpread                    0.3609  3.4078e-10  ***
-  AwayMoneyLine                      0.3519  9.8745e-10  ***
-  HomeMoneyLine                     -0.3371  5.2673e-09  ***
-  OverUnder                          0.1936  1.0196e-03  **
-  PlayingSurface                    -0.1645  5.3618e-03  **
-  snowfall                           0.1164  4.9630e-02  *
-  FourthDownPercentage               0.1075  6.9872e-02  .
-  temperature                        0.0962  1.0522e-01   
-  HomePointSpreadPayout             -0.0791  1.8288e-01   
-  wind_speed                        -0.0734  2.1640e-01   
-  weather_code                       0.0598  3.1433e-01   
-  wind_direction                    -0.0548  3.5653e-01   
-  AwayPointSpreadPayout              0.0488  4.1153e-01   
-  is_precipitation                   0.0478  4.2114e-01   
-  is_dome                            0.0464  4.3530e-01   
-  freezing                          -0.0410  4.9061e-01   
-  UnderPayout                        0.0322  5.8823e-01   
-  high_wind                         -0.0256  6.6748e-01   
-  dayofweek                          0.0225  7.0484e-01   
-  AwayTeamScore                     -0.0221  7.1040e-01   
-  OverPayout                        -0.0218  7.1385e-01   
-  weekofyear_y                      -0.0202  7.3393e-01   
-  weekofyear_x                      -0.0202  7.3393e-01   
-  dayofyear                         -0.0159  7.8950e-01   
-  month_x                           -0.0151  7.9987e-01   
-  month_y                           -0.0151  7.9987e-01   
-  Penalties                         -0.0147  8.0444e-01   
-  year                              -0.0140  8.1454e-01   
-  precipitation                     -0.0102  8.6412e-01   
-  hour                               0.0060  9.2018e-01   
-  bad_weather_index                 -0.0030  9.5921e-01   
-  PenaltyYards                       0.0022  9.7103e-01   
+  FirstDowns                         0.5923  4.1899e-82  ***
+  RedZonePercentage                  0.4939  8.8309e-54  ***
+  PassingYards                       0.4606  3.9447e-46  ***
+  ThirdDownPercentage                0.4424  2.8228e-42  ***
+  RushingYards                       0.3931  5.6145e-33  ***
+  HomePointSpread                   -0.3742  8.3736e-30  ***
+  AwayPointSpread                    0.3742  8.3736e-30  ***
+  AwayMoneyLine                      0.3578  3.2566e-27  ***
+  HomeMoneyLine                     -0.3479  9.9541e-26  ***
+  elo1_pre                           0.2748  2.8053e-16  ***
+  qbelo1_pre                         0.2748  2.8053e-16  ***
+  OverUnder                          0.1952  8.6308e-09  ***
+  qbelo2_pre                        -0.1216  3.6619e-04  ***
+  elo2_pre                          -0.1216  3.6619e-04  ***
+  FourthDownPercentage               0.1102  1.2510e-03  **
+  wind_speed                        -0.0956  5.1410e-03  **
+  AwayPointSpreadPayout              0.0676  4.8153e-02  *
+  is_dome                            0.0656  5.5261e-02  .
+  is_precipitation                  -0.0590  8.4443e-02  .
+  temperature                        0.0549  1.0843e-01   
+  weather_code                      -0.0533  1.1926e-01   
+  AwayTeamScore                     -0.0515  1.3224e-01   
+  Referee                           -0.0503  2.4394e-01   
+  bad_weather_index                 -0.0482  1.5893e-01   
+  precipitation                     -0.0450  1.8876e-01   
+  high_wind                         -0.0449  1.8960e-01   
+  weekofyear_y                      -0.0441  1.9728e-01   
+  weekofyear_x                      -0.0441  1.9728e-01   
+  year                               0.0410  2.3133e-01   
+  month_x                           -0.0404  2.3855e-01   
+  month_y                           -0.0404  2.3855e-01   
+  dayofyear                         -0.0389  2.5554e-01   
+  PlayingSurface                    -0.0259  4.5342e-01   
+  Season                             0.0255  4.5648e-01   
+  Penalties                         -0.0250  4.6600e-01   
+  wind_direction                    -0.0230  5.0274e-01   
+  hour                               0.0176  6.0801e-01   
+  freezing                           0.0172  6.1454e-01   
+  OverPayout                        -0.0160  6.4088e-01   
+  snowfall                           0.0149  6.6364e-01   
+  UnderPayout                        0.0147  6.6759e-01   
+  HomePointSpreadPayout             -0.0138  6.8752e-01   
+  dayofweek                          0.0091  7.9026e-01   
+  PenaltyYards                      -0.0046  8.9314e-01   
 
 ======================================================================
 TARGET: OpponentScore
@@ -93,172 +105,196 @@ TARGET: OpponentScore
   Feature                                 r     p-value  Sig
   --------------------------------  --------  ----------  ---
   AwayTeamScore                      1.0000  0.0000e+00  ***
-  HomePointSpread                    0.3722  8.5043e-11  ***
-  AwayPointSpread                   -0.3722  8.5043e-11  ***
-  HomeMoneyLine                      0.3680  1.4432e-10  ***
-  AwayMoneyLine                     -0.3511  1.0875e-09  ***
-  PassingYards                       0.2770  2.0412e-06  ***
-  OverUnder                          0.2310  8.2877e-05  ***
-  RushingYards                      -0.1871  1.5098e-03  **
-  month_x                            0.1654  5.1304e-03  **
-  month_y                            0.1654  5.1304e-03  **
-  dayofyear                          0.1609  6.4924e-03  **
-  Penalties                          0.1584  7.3689e-03  **
-  weekofyear_x                       0.1558  8.4022e-03  **
-  weekofyear_y                       0.1558  8.4022e-03  **
-  year                              -0.1328  2.4923e-02  *
-  PenaltyYards                       0.1242  3.6142e-02  *
-  snowfall                           0.1084  6.7559e-02  .
-  HomePointSpreadPayout              0.1029  8.2924e-02  .
-  ThirdDownPercentage               -0.0859  1.4813e-01   
-  high_wind                          0.0852  1.5138e-01   
-  wind_speed                        -0.0687  2.4762e-01   
-  precipitation                     -0.0608  3.0645e-01   
-  temperature                        0.0536  3.6743e-01   
-  freezing                          -0.0421  4.7933e-01   
-  RedZonePercentage                  0.0419  4.8078e-01   
-  UnderPayout                        0.0404  4.9737e-01   
-  FirstDowns                         0.0403  4.9840e-01   
-  AwayPointSpreadPayout             -0.0314  5.9804e-01   
-  hour                               0.0254  6.6954e-01   
-  is_dome                            0.0198  7.3972e-01   
-  FourthDownPercentage              -0.0166  7.7990e-01   
-  bad_weather_index                  0.0162  7.8526e-01   
-  weather_code                       0.0143  8.0952e-01   
-  dayofweek                          0.0126  8.3211e-01   
-  wind_direction                    -0.0122  8.3712e-01   
-  PlayingSurface                    -0.0091  8.7843e-01   
-  is_precipitation                   0.0079  8.9371e-01   
-  OverPayout                         0.0023  9.6967e-01   
+  HomePointSpread                    0.3109  1.2809e-20  ***
+  AwayPointSpread                   -0.3109  1.2809e-20  ***
+  AwayMoneyLine                     -0.3020  1.7262e-19  ***
+  HomeMoneyLine                      0.2967  7.6771e-19  ***
+  OverUnder                          0.2392  1.3742e-12  ***
+  qbelo2_pre                         0.1991  4.3096e-09  ***
+  elo2_pre                           0.1991  4.3096e-09  ***
+  RushingYards                      -0.1955  8.2709e-09  ***
+  PassingYards                       0.1836  6.4345e-08  ***
+  Penalties                          0.1220  3.4848e-04  ***
+  PenaltyYards                       0.1175  5.7630e-04  ***
+  wind_speed                        -0.1090  1.4088e-03  **
+  month_x                            0.0892  9.0835e-03  **
+  month_y                            0.0892  9.0835e-03  **
+  dayofyear                          0.0884  9.7147e-03  **
+  ThirdDownPercentage               -0.0833  1.4887e-02  *
+  elo1_pre                          -0.0819  1.6604e-02  *
+  qbelo1_pre                        -0.0819  1.6604e-02  *
+  PlayingSurface                    -0.0811  1.8878e-02  *
+  temperature                        0.0803  1.8791e-02  *
+  weekofyear_x                       0.0790  2.0948e-02  *
+  weekofyear_y                       0.0790  2.0948e-02  *
+  is_dome                            0.0657  5.4669e-02  .
+  wind_direction                    -0.0648  5.8393e-02  .
+  bad_weather_index                 -0.0647  5.8470e-02  .
+  Season                             0.0647  5.8786e-02  .
+  freezing                          -0.0615  7.2364e-02  .
+  RedZonePercentage                  0.0579  9.0509e-02  .
+  FirstDowns                         0.0484  1.5709e-01   
+  weather_code                      -0.0464  1.7545e-01   
+  is_precipitation                  -0.0464  1.7551e-01   
+  Referee                            0.0442  3.0561e-01   
+  FourthDownPercentage               0.0326  3.4152e-01   
+  year                               0.0325  3.4274e-01   
+  precipitation                     -0.0319  3.5082e-01   
+  snowfall                           0.0298  3.8437e-01   
+  hour                               0.0295  3.8871e-01   
+  HomePointSpreadPayout             -0.0233  4.9662e-01   
+  dayofweek                         -0.0183  5.9393e-01   
+  UnderPayout                        0.0182  5.9532e-01   
+  OverPayout                        -0.0129  7.0682e-01   
+  high_wind                         -0.0087  7.9978e-01   
+  AwayPointSpreadPayout              0.0000  9.9940e-01   
 
 ======================================================================
 TARGET: HomeTeamCover
 ======================================================================
   Feature                                 r     p-value  Sig
   --------------------------------  --------  ----------  ---
-  AwayTeamScore                      0.4749  1.9318e-17  ***
-  ThirdDownPercentage               -0.2723  3.0895e-06  ***
-  RushingYards                      -0.2440  3.1189e-05  ***
-  FirstDowns                        -0.2406  4.0606e-05  ***
-  RedZonePercentage                 -0.1834  1.8819e-03  **
-  Penalties                          0.1179  4.6791e-02  *
-  FourthDownPercentage              -0.1076  6.9595e-02  .
-  weekofyear_x                       0.0980  9.8654e-02  .
-  weekofyear_y                       0.0980  9.8654e-02  .
-  month_x                            0.0961  1.0563e-01   
-  month_y                            0.0961  1.0563e-01   
-  AwayPointSpreadPayout             -0.0926  1.1877e-01   
-  HomePointSpreadPayout              0.0917  1.2244e-01   
-  dayofyear                          0.0865  1.4509e-01   
-  year                              -0.0777  1.9088e-01   
-  snowfall                           0.0775  1.9197e-01   
-  PenaltyYards                       0.0743  2.1118e-01   
-  PassingYards                      -0.0586  3.2415e-01   
-  OverUnder                          0.0477  4.2265e-01   
-  PlayingSurface                     0.0458  4.4110e-01   
-  hour                              -0.0432  4.6802e-01   
-  OverPayout                         0.0391  5.1069e-01   
-  is_dome                            0.0373  5.3069e-01   
-  precipitation                      0.0359  5.4623e-01   
-  UnderPayout                       -0.0278  6.4078e-01   
-  temperature                        0.0272  6.4725e-01   
-  dayofweek                          0.0261  6.6116e-01   
-  AwayMoneyLine                      0.0225  7.0486e-01   
-  wind_speed                        -0.0152  7.9810e-01   
-  HomePointSpread                   -0.0146  8.0618e-01   
-  AwayPointSpread                    0.0146  8.0618e-01   
-  high_wind                         -0.0145  8.0723e-01   
-  wind_direction                     0.0093  8.7600e-01   
-  HomeMoneyLine                      0.0063  9.1546e-01   
-  is_precipitation                   0.0037  9.4983e-01   
-  weather_code                       0.0036  9.5118e-01   
-  freezing                           0.0032  9.5721e-01   
-  bad_weather_index                 -0.0018  9.7574e-01   
+  AwayTeamScore                      0.5123  2.1832e-58  ***
+  RushingYards                      -0.2763  1.9075e-16  ***
+  ThirdDownPercentage               -0.2465  2.6835e-13  ***
+  FirstDowns                        -0.2079  8.4130e-10  ***
+  RedZonePercentage                 -0.1711  4.8449e-07  ***
+  Penalties                          0.0990  3.7605e-03  **
+  PenaltyYards                       0.0872  1.0740e-02  *
+  PassingYards                      -0.0754  2.7553e-02  *
+  precipitation                      0.0728  3.3379e-02  *
+  month_y                            0.0625  6.7815e-02  .
+  month_x                            0.0625  6.7815e-02  .
+  Referee                            0.0596  1.6742e-01   
+  dayofyear                          0.0564  9.9177e-02  .
+  weekofyear_x                       0.0558  1.0282e-01   
+  weekofyear_y                       0.0558  1.0282e-01   
+  temperature                        0.0557  1.0346e-01   
+  OverUnder                          0.0549  1.0893e-01   
+  freezing                          -0.0534  1.1863e-01   
+  FourthDownPercentage              -0.0517  1.3124e-01   
+  year                              -0.0464  1.7538e-01   
+  snowfall                           0.0446  1.9242e-01   
+  HomeMoneyLine                      0.0417  2.2265e-01   
+  is_precipitation                   0.0343  3.1651e-01   
+  weather_code                       0.0328  3.3749e-01   
+  HomePointSpread                    0.0325  3.4307e-01   
+  AwayPointSpread                   -0.0325  3.4307e-01   
+  AwayMoneyLine                     -0.0321  3.4837e-01   
+  AwayPointSpreadPayout             -0.0307  3.7044e-01   
+  wind_direction                    -0.0306  3.7146e-01   
+  hour                              -0.0297  3.8602e-01   
+  PlayingSurface                    -0.0285  4.1020e-01   
+  Season                            -0.0229  5.0326e-01   
+  wind_speed                        -0.0125  7.1526e-01   
+  HomePointSpreadPayout             -0.0124  7.1714e-01   
+  UnderPayout                       -0.0116  7.3480e-01   
+  elo1_pre                          -0.0110  7.4850e-01   
+  qbelo1_pre                        -0.0110  7.4850e-01   
+  dayofweek                         -0.0101  7.6813e-01   
+  OverPayout                         0.0096  7.7994e-01   
+  bad_weather_index                 -0.0053  8.7689e-01   
+  elo2_pre                          -0.0043  8.9904e-01   
+  qbelo2_pre                        -0.0043  8.9904e-01   
+  high_wind                         -0.0035  9.1953e-01   
+  is_dome                            0.0024  9.4330e-01   
 
 ======================================================================
 TARGET: AwayTeamCover
 ======================================================================
   Feature                                 r     p-value  Sig
   --------------------------------  --------  ----------  ---
-  AwayTeamScore                     -0.4757  1.7001e-17  ***
-  ThirdDownPercentage                0.2860  9.0955e-07  ***
-  RushingYards                       0.2437  3.1861e-05  ***
-  FirstDowns                         0.2366  5.4830e-05  ***
-  RedZonePercentage                  0.1934  1.0311e-03  **
-  Penalties                         -0.1183  4.5961e-02  *
-  FourthDownPercentage               0.1004  9.0635e-02  .
-  weekofyear_x                      -0.0932  1.1631e-01   
-  weekofyear_y                      -0.0932  1.1631e-01   
-  month_x                           -0.0904  1.2769e-01   
-  month_y                           -0.0904  1.2769e-01   
-  HomePointSpreadPayout             -0.0903  1.2828e-01   
-  AwayPointSpreadPayout              0.0896  1.3146e-01   
-  dayofyear                         -0.0817  1.6884e-01   
-  snowfall                          -0.0785  1.8646e-01   
-  year                               0.0753  2.0471e-01   
-  PenaltyYards                      -0.0726  2.2152e-01   
-  PassingYards                       0.0592  3.1942e-01   
-  OverUnder                         -0.0490  4.1035e-01   
-  temperature                       -0.0458  4.4113e-01   
-  hour                               0.0447  4.5212e-01   
-  is_dome                           -0.0421  4.7860e-01   
-  PlayingSurface                    -0.0389  5.1289e-01   
-  precipitation                     -0.0373  5.3049e-01   
-  OverPayout                        -0.0339  5.6889e-01   
-  dayofweek                         -0.0231  6.9794e-01   
-  freezing                           0.0200  7.3732e-01   
-  AwayMoneyLine                     -0.0175  7.6810e-01   
-  UnderPayout                        0.0175  7.6857e-01   
-  wind_speed                         0.0164  7.8224e-01   
-  high_wind                          0.0130  8.2725e-01   
-  bad_weather_index                  0.0118  8.4237e-01   
-  HomeMoneyLine                     -0.0100  8.6591e-01   
-  HomePointSpread                    0.0083  8.8917e-01   
-  AwayPointSpread                   -0.0083  8.8917e-01   
-  is_precipitation                  -0.0062  9.1647e-01   
-  weather_code                      -0.0061  9.1871e-01   
-  wind_direction                     0.0008  9.8951e-01   
+  AwayTeamScore                     -0.5100  8.3837e-58  ***
+  RushingYards                       0.2815  4.9503e-17  ***
+  ThirdDownPercentage                0.2500  1.2015e-13  ***
+  FirstDowns                         0.2049  1.4680e-09  ***
+  RedZonePercentage                  0.1832  6.8572e-08  ***
+  Penalties                         -0.0966  4.6952e-03  **
+  PenaltyYards                      -0.0784  2.1787e-02  *
+  PassingYards                       0.0726  3.3773e-02  *
+  precipitation                     -0.0690  4.3561e-02  *
+  OverUnder                         -0.0675  4.8539e-02  *
+  FourthDownPercentage               0.0672  4.9480e-02  *
+  temperature                       -0.0558  1.0324e-01   
+  freezing                           0.0507  1.3842e-01   
+  snowfall                          -0.0497  1.4688e-01   
+  month_y                           -0.0469  1.7075e-01   
+  month_x                           -0.0469  1.7075e-01   
+  is_precipitation                  -0.0445  1.9352e-01   
+  weather_code                      -0.0429  2.1041e-01   
+  Referee                           -0.0419  3.3236e-01   
+  dayofyear                         -0.0410  2.3083e-01   
+  weekofyear_x                      -0.0404  2.3804e-01   
+  weekofyear_y                      -0.0404  2.3804e-01   
+  PlayingSurface                     0.0337  3.2948e-01   
+  wind_direction                     0.0333  3.3081e-01   
+  hour                               0.0319  3.5078e-01   
+  AwayPointSpreadPayout              0.0253  4.6011e-01   
+  HomeMoneyLine                     -0.0186  5.8762e-01   
+  elo2_pre                           0.0127  7.1137e-01   
+  qbelo2_pre                         0.0127  7.1137e-01   
+  year                               0.0111  7.4605e-01   
+  Season                            -0.0086  8.0176e-01   
+  AwayMoneyLine                      0.0085  8.0369e-01   
+  wind_speed                         0.0084  8.0722e-01   
+  HomePointSpreadPayout              0.0075  8.2577e-01   
+  is_dome                           -0.0075  8.2623e-01   
+  AwayPointSpread                    0.0071  8.3563e-01   
+  HomePointSpread                   -0.0071  8.3563e-01   
+  bad_weather_index                 -0.0066  8.4660e-01   
+  high_wind                         -0.0062  8.5566e-01   
+  OverPayout                        -0.0060  8.6066e-01   
+  qbelo1_pre                        -0.0034  9.2025e-01   
+  elo1_pre                          -0.0034  9.2025e-01   
+  dayofweek                          0.0013  9.7018e-01   
+  UnderPayout                       -0.0006  9.8648e-01   
 
 ======================================================================
 TARGET: BetOutcome
 ======================================================================
   Feature                                 r     p-value  Sig
   --------------------------------  --------  ----------  ---
-  AwayTeamScore                     -0.5634  2.8380e-25  ***
-  PassingYards                      -0.2742  2.6110e-06  ***
-  FirstDowns                        -0.2472  2.4278e-05  ***
-  RedZonePercentage                 -0.2159  2.4087e-04  ***
-  ThirdDownPercentage               -0.1318  2.6094e-02  *
-  RushingYards                      -0.1201  4.2763e-02  *
-  snowfall                          -0.1124  5.8138e-02  .
-  high_wind                         -0.0772  1.9366e-01   
-  wind_speed                         0.0566  3.4136e-01   
-  Penalties                         -0.0548  3.5668e-01   
-  dayofweek                         -0.0522  3.8024e-01   
-  weather_code                      -0.0519  3.8288e-01   
-  AwayPointSpreadPayout              0.0514  3.8700e-01   
-  HomePointSpreadPayout             -0.0500  3.9993e-01   
-  bad_weather_index                 -0.0451  4.4807e-01   
-  PenaltyYards                      -0.0402  4.9930e-01   
-  PlayingSurface                     0.0392  5.1008e-01   
-  UnderPayout                       -0.0383  5.1986e-01   
-  is_precipitation                  -0.0332  5.7625e-01   
-  month_y                           -0.0310  6.0198e-01   
-  month_x                           -0.0310  6.0198e-01   
-  temperature                       -0.0309  6.0286e-01   
-  dayofyear                         -0.0278  6.4021e-01   
-  HomePointSpread                   -0.0272  6.4759e-01   
-  AwayPointSpread                    0.0272  6.4759e-01   
-  OverPayout                        -0.0253  6.7035e-01   
-  hour                               0.0243  6.8345e-01   
-  precipitation                     -0.0228  7.0202e-01   
-  year                               0.0222  7.0844e-01   
-  is_dome                            0.0218  7.1386e-01   
-  OverUnder                         -0.0212  7.2099e-01   
-  AwayMoneyLine                      0.0171  7.7381e-01   
-  weekofyear_x                      -0.0137  8.1819e-01   
-  weekofyear_y                      -0.0137  8.1819e-01   
-  FourthDownPercentage               0.0118  8.4212e-01   
-  freezing                           0.0096  8.7207e-01   
-  HomeMoneyLine                     -0.0080  8.9305e-01   
-  wind_direction                     0.0032  9.5714e-01   
+  AwayTeamScore                     -0.5131  1.3680e-58  ***
+  RedZonePercentage                 -0.2922  2.7194e-18  ***
+  FirstDowns                        -0.2898  5.3262e-18  ***
+  PassingYards                      -0.2887  7.1048e-18  ***
+  ThirdDownPercentage               -0.1474  1.5105e-05  ***
+  RushingYards                      -0.1004  3.2985e-03  **
+  FourthDownPercentage              -0.0664  5.2373e-02  .
+  snowfall                          -0.0498  1.4602e-01   
+  year                              -0.0493  1.4983e-01   
+  Season                            -0.0487  1.5477e-01   
+  wind_speed                         0.0485  1.5625e-01   
+  is_precipitation                   0.0418  2.2184e-01   
+  weather_code                       0.0308  3.6830e-01   
+  high_wind                         -0.0240  4.8419e-01   
+  PlayingSurface                     0.0238  4.9144e-01   
+  bad_weather_index                  0.0235  4.9264e-01   
+  HomeMoneyLine                      0.0218  5.2346e-01   
+  temperature                       -0.0217  5.2644e-01   
+  dayofweek                         -0.0204  5.5128e-01   
+  hour                               0.0199  5.6136e-01   
+  elo2_pre                           0.0128  7.0887e-01   
+  qbelo2_pre                         0.0128  7.0887e-01   
+  precipitation                      0.0127  7.1115e-01   
+  PenaltyYards                      -0.0124  7.1685e-01   
+  dayofyear                         -0.0109  7.5112e-01   
+  freezing                           0.0107  7.5515e-01   
+  HomePointSpreadPayout             -0.0099  7.7251e-01   
+  wind_direction                    -0.0090  7.9361e-01   
+  month_y                           -0.0073  8.3084e-01   
+  month_x                           -0.0073  8.3084e-01   
+  Penalties                         -0.0039  9.0903e-01   
+  UnderPayout                        0.0038  9.1235e-01   
+  AwayPointSpread                   -0.0038  9.1256e-01   
+  HomePointSpread                    0.0038  9.1256e-01   
+  OverPayout                        -0.0025  9.4227e-01   
+  is_dome                           -0.0025  9.4250e-01   
+  elo1_pre                           0.0024  9.4413e-01   
+  qbelo1_pre                         0.0024  9.4413e-01   
+  Referee                           -0.0023  9.5754e-01   
+  weekofyear_y                      -0.0022  9.4821e-01   
+  weekofyear_x                      -0.0022  9.4821e-01   
+  AwayPointSpreadPayout             -0.0011  9.7424e-01   
+  AwayMoneyLine                      0.0009  9.7937e-01   
+  OverUnder                          0.0002  9.9500e-01   
