@@ -111,3 +111,17 @@ def get_team_stat_vector(
     # Strip internal metadata keys
     stat_dict = {k: v for k, v in stat_dict.items() if not k.startswith("_")}
     return stat_dict, strategy_used
+
+
+def get_away_team_stat_vector(
+    away_team: str,
+    season: int,
+    conn=None,
+) -> dict:
+    """
+    Returns stat dict for the away team with away_ prefix, using the same
+    tiered strategy as get_team_stat_vector.
+    Keys: away_PassingYards, away_RushingYards, etc.
+    """
+    stat_dict, _ = get_team_stat_vector(away_team, season, conn=conn)
+    return {f"away_{k}": v for k, v in stat_dict.items()}

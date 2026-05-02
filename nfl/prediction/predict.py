@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 
 from nfl import database
-from nfl.features.season_averages import get_team_stat_vector
+from nfl.features.season_averages import get_away_team_stat_vector, get_team_stat_vector
 from nfl.ingestion.elo_calculator import get_current_elo
 from nfl.ingestion.weather import fetch_game_weather, get_team_coords
 from nfl.training.train import load_models
@@ -22,6 +22,7 @@ def build_feature_vector(
     stat_vector: dict,
     feature_columns: list,
     weather: dict = None,
+    away_stat_vector: dict = None,
 ) -> pd.DataFrame:
     """
     Construct a single-row DataFrame matching the training feature set.
@@ -34,7 +35,8 @@ def build_feature_vector(
       neutral, referee, elo1_pre, elo2_pre, qbelo1_pre, qbelo2_pre,
       home_google_trend, away_google_trend
 
-    stat_vector keys: TeamGameStats column averages for the home team
+    stat_vector: home team rolling stat averages
+    away_stat_vector: away team rolling stat averages (keys prefixed away_)
     weather: dict from fetch_game_weather (optional)
     feature_columns: ordered list saved at training time
     """
@@ -113,6 +115,10 @@ def build_feature_vector(
     # Overlay home-team stat averages
     row.update(stat_vector)
 
+    # Overlay away-team stat averages (away_ prefixed)
+    if away_stat_vector:
+        row.update(away_stat_vector)
+
     # Build DataFrame aligned to training feature columns
     df = pd.DataFrame([row])
 
@@ -151,12 +157,13 @@ def predict_game(game_inputs: dict, conn=None) -> dict:
         _close_conn = False
 
     stat_vector, strategy_used = get_team_stat_vector(home_team, season, conn=conn)
+    away_team = game_inputs.get("away_team", "")
+    away_stat_vector = get_away_team_stat_vector(away_team, season, conn=conn)
 
     # Auto-fill ELO from calculator if not provided by caller
     if not game_inputs.get("elo1_pre") or not game_inputs.get("elo2_pre"):
         try:
             current_elo = get_current_elo(conn)
-            away_team = game_inputs.get("away_team", "")
             home_elo_data = current_elo.get(home_team, {})
             away_elo_data = current_elo.get(away_team, {})
             game_inputs.setdefault("elo1_pre", home_elo_data.get("elo", 1500.0))
@@ -187,7 +194,10 @@ def predict_game(game_inputs: dict, conn=None) -> dict:
             log.warning(f"Weather auto-fetch failed: {e}")
             weather = None
 
-    feature_vector = build_feature_vector(game_inputs, stat_vector, feature_columns, weather=weather)
+    feature_vector = build_feature_vector(
+        game_inputs, stat_vector, feature_columns,
+        weather=weather, away_stat_vector=away_stat_vector,
+    )
 
     # Regression predictions
     home_score = float(models["modelhs"].predict(feature_vector)[0])

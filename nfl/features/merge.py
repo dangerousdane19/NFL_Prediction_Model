@@ -63,7 +63,7 @@ def build_nfl_dataset(
             how="left",
         )
 
-    # Step 4: Attach home team game stats + stadium
+    # Step 4a: Attach home team game stats + stadium
     if not teamstatswstadium.empty:
         df = pd.merge(
             df,
@@ -72,6 +72,34 @@ def build_nfl_dataset(
             right_on=["Team", "year", "dayofyear"],
             how="left",
         )
+
+    # Step 4b: Attach away team game stats (prefixed away_)
+    _AWAY_STAT_COLS = [
+        "PassingYards", "RushingYards", "Penalties", "PenaltyYards",
+        "Turnovers", "ThirdDownPercentage", "RedZonePercentage",
+        "FirstDowns", "FourthDownPercentage",
+    ]
+    if not teamstats.empty:
+        available_away = ["Team", "year", "dayofyear"] + [
+            c for c in _AWAY_STAT_COLS if c in teamstats.columns
+        ]
+        away_stats = teamstats[available_away].copy()
+        away_stats.rename(
+            columns={c: f"away_{c}" for c in _AWAY_STAT_COLS if c in away_stats.columns},
+            inplace=True,
+        )
+        df = pd.merge(
+            df,
+            away_stats,
+            left_on=["AwayTeamName", "year", "dayofyear"],
+            right_on=["Team", "year", "dayofyear"],
+            how="left",
+            suffixes=("", "_away_drop"),
+        )
+        # Drop the redundant Team key column from the away join
+        df.drop(columns=[c for c in df.columns if c.endswith("_away_drop")], inplace=True)
+        if "Team_y" in df.columns:
+            df.drop(columns=["Team_y"], inplace=True)
 
     # Steps 5 & 6: Attach Google Trends (home + away)
     trends_available = not google_trends.empty

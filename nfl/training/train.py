@@ -23,7 +23,7 @@ from nfl import config, database
 log = logging.getLogger(__name__)
 
 # Feature columns to drop when building X
-REGRESSION_DROP = ["HomeTeamScore", "TotalScore_x", "OpponentScore", "DateTime", "AwayTeamName", "HomeTeamName"]
+REGRESSION_DROP = ["HomeTeamScore", "AwayTeamScore", "TotalScore_x", "OpponentScore", "DateTime", "AwayTeamName", "HomeTeamName"]
 CLASSIFICATION_DROP = REGRESSION_DROP + ["BetOutcome", "HomeTeamCover", "AwayTeamCover"]
 
 
