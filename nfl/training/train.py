@@ -16,6 +16,8 @@ from sklearn.metrics import (
     r2_score,
 )
 from sklearn.model_selection import train_test_split
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler
 from xgboost import XGBRegressor
 
 from nfl import config, database
@@ -23,7 +25,19 @@ from nfl import config, database
 log = logging.getLogger(__name__)
 
 # Feature columns to drop when building X
-REGRESSION_DROP = ["HomeTeamScore", "AwayTeamScore", "TotalScore_x", "OpponentScore", "DateTime", "AwayTeamName", "HomeTeamName"]
+_REDUNDANT = [
+    # Exact duplicates of elo1_pre / elo2_pre (QB ELO not available; set equal to team ELO)
+    "qbelo1_pre", "qbelo2_pre",
+    # Google Trends disabled — all zeros, zero variance
+    "HomeTeamGoogleTrend", "AwayTeamGoogleTrend",
+    # Merge artifacts: duplicate time columns
+    "Season",        # duplicate of Season_x
+    "weekofyear_y",  # duplicate of weekofyear_x
+]
+REGRESSION_DROP = [
+    "HomeTeamScore", "AwayTeamScore", "TotalScore_x", "OpponentScore",
+    "DateTime", "AwayTeamName", "HomeTeamName",
+] + _REDUNDANT
 CLASSIFICATION_DROP = REGRESSION_DROP + ["BetOutcome", "HomeTeamCover", "AwayTeamCover"]
 
 
@@ -87,7 +101,7 @@ def train_all_models(NFLmodeldata: pd.DataFrame, NFLmodeldata1: pd.DataFrame) ->
 
     # Home Team Cover (Cell 136)
     X_train, X_test, y_train, y_test = _split(NFLmodeldata1, "HomeTeamCover", CLASSIFICATION_DROP)
-    logreg_homecover = LogisticRegression(max_iter=10000)
+    logreg_homecover = Pipeline([("scaler", StandardScaler()), ("clf", LogisticRegression(max_iter=10000))])
     logreg_homecover.fit(X_train, y_train)
     metrics["logreg_home_accuracy"] = float(accuracy_score(y_test, logreg_homecover.predict(X_test)))
     joblib.dump(logreg_homecover, os.path.join(config.MODEL_DIR, "logreg_homecover.joblib"))
@@ -95,7 +109,7 @@ def train_all_models(NFLmodeldata: pd.DataFrame, NFLmodeldata1: pd.DataFrame) ->
 
     # Away Team Cover (Cell 142)
     X_train, X_test, y_train, y_test = _split(NFLmodeldata1, "AwayTeamCover", CLASSIFICATION_DROP)
-    logreg_awaycover = LogisticRegression(max_iter=10000)
+    logreg_awaycover = Pipeline([("scaler", StandardScaler()), ("clf", LogisticRegression(max_iter=10000))])
     logreg_awaycover.fit(X_train, y_train)
     metrics["logreg_away_accuracy"] = float(accuracy_score(y_test, logreg_awaycover.predict(X_test)))
     joblib.dump(logreg_awaycover, os.path.join(config.MODEL_DIR, "logreg_awaycover.joblib"))
@@ -103,7 +117,7 @@ def train_all_models(NFLmodeldata: pd.DataFrame, NFLmodeldata1: pd.DataFrame) ->
 
     # Bet Outcome / Over-Under (Cell 148)
     X_train, X_test, y_train, y_test = _split(NFLmodeldata1, "BetOutcome", CLASSIFICATION_DROP)
-    logreg_betoutcome = LogisticRegression(max_iter=10000)
+    logreg_betoutcome = Pipeline([("scaler", StandardScaler()), ("clf", LogisticRegression(max_iter=10000))])
     logreg_betoutcome.fit(X_train, y_train)
     metrics["logreg_bet_accuracy"] = float(accuracy_score(y_test, logreg_betoutcome.predict(X_test)))
     joblib.dump(logreg_betoutcome, os.path.join(config.MODEL_DIR, "logreg_betoutcome.joblib"))
